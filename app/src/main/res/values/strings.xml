@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">BB Launcher</string>
+    <string name="notification_listener_name">BB Launcher Hub</string>
     <string name="destination_hub">Hub</string>
     <string name="destination_active_frames">Active Frames</string>
     <string name="destination_apps">Apps</string>
     <string name="hub_empty_title">Your Hub is quiet</string>
     <string name="hub_empty_description">Notification access will bring conversations and alerts together here.</string>
+    <string name="hub_empty_enabled_description">New conversations and alerts will appear here.</string>
     <string name="frame_clock">Clock</string>
     <string name="frame_device">Device</string>
     <string name="frame_recent">Recent</string>
@@ -24,5 +26,17 @@
     <string name="connection_mobile">Mobile</string>
     <string name="connection_online">Online</string>
     <string name="connection_offline">Offline</string>
-    <string name="status_bar_description">Open Hub. %1$s, %2$s, battery %3$d percent.</string>
+    <string name="status_bar_description">Open notification shade. %1$s, %2$s, battery %3$d percent, %4$d notifications.</string>
+    <string name="notification_access_title">Connect the BlackBerry Hub</string>
+    <string name="notification_access_description">Allow notification access so the launcher can display, open, and dismiss alerts. Android keeps this permission under Special app access.</string>
+    <string name="enable_notification_access">Enable notification access</string>
+    <string name="notification_settings_unavailable">Android notification access settings could not be opened.</string>
+    <string name="notification_has_no_action">This notification cannot be opened.</string>
+    <string name="notification_open_failed">The notification is no longer available.</string>
+    <string name="notification_action_failed">The notification service is not connected yet.</string>
+    <string name="notification_shade_title">Notifications</string>
+    <string name="close_shade">Close</string>
+    <string name="notification_count">%1$d notifications</string>
+    <string name="clear_all">Clear all</string>
+    <string name="dismiss_notification">Dismiss notification</string>
 </resources>

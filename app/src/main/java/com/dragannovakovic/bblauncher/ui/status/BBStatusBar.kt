@@ -4,6 +4,9 @@ import android.text.format.DateFormat
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.draggable
+import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -16,6 +19,7 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -32,6 +36,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
@@ -50,11 +55,20 @@ import kotlin.time.Duration.Companion.minutes
 @Composable
 fun BBStatusBar(
     status: SystemStatus,
+    notificationCount: Int,
     onOpenHub: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
+    val density = LocalDensity.current
     var now by remember { mutableStateOf(LocalTime.now()) }
+    var downwardDrag by remember { mutableStateOf(0f) }
+    val openThreshold = with(density) { 28.dp.toPx() }
+    val dragState = rememberDraggableState { delta ->
+        if (delta > 0f) {
+            downwardDrag += delta
+        }
+    }
 
     LaunchedEffect(Unit) {
         while (true) {
@@ -73,6 +87,7 @@ fun BBStatusBar(
         formattedTime,
         connectionDescription,
         status.batteryLevel,
+        notificationCount,
     )
 
     Box(
@@ -84,6 +99,17 @@ fun BBStatusBar(
             )
             .height(30.dp)
             .clickable(role = Role.Button, onClick = onOpenHub)
+            .draggable(
+                state = dragState,
+                orientation = Orientation.Vertical,
+                onDragStarted = { downwardDrag = 0f },
+                onDragStopped = {
+                    if (downwardDrag >= openThreshold) {
+                        onOpenHub()
+                    }
+                    downwardDrag = 0f
+                },
+            )
             .semantics {
                 contentDescription = accessibilityDescription
             }
@@ -94,6 +120,21 @@ fun BBStatusBar(
             horizontalArrangement = Arrangement.spacedBy(7.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
+            if (notificationCount > 0) {
+                Box(
+                    modifier = Modifier
+                        .size(17.dp)
+                        .background(MaterialTheme.colorScheme.primary, CircleShape),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = notificationCount.coerceAtMost(99).toString(),
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        fontSize = 9.sp,
+                        fontWeight = FontWeight.Bold,
+                    )
+                }
+            }
             ConnectionIcon(connectionType = status.connectionType)
             Text(
                 text = connectionDescription,

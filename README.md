@@ -4,7 +4,7 @@ An Android 16 launcher that recreates the interaction model and visual character
 
 ## Current status
 
-The project contains a dark, edge-to-edge Jetpack Compose application targeting API 36. It is registered as an Android Home application and provides a searchable app grid, functional Active Frames, and an in-launcher BB10-style status bar with live connection and battery state.
+The project contains a dark, edge-to-edge Jetpack Compose application targeting API 36. It is registered as an Android Home application and provides a searchable app grid, functional Active Frames, a live BB10-style status bar, and a notification-listener-backed Hub and pull-down shade.
 
 ## Build
 
