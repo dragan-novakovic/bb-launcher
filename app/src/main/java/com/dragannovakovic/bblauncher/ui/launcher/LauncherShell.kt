@@ -35,6 +35,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -47,7 +48,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.dragannovakovic.bblauncher.R
+import com.dragannovakovic.bblauncher.data.apps.LaunchableApp
+import com.dragannovakovic.bblauncher.ui.apps.AppsScreen
+import com.dragannovakovic.bblauncher.ui.apps.AppsUiState
+import com.dragannovakovic.bblauncher.ui.apps.AppsViewModel
 import com.dragannovakovic.bblauncher.ui.theme.BBLauncherTheme
 import kotlinx.coroutines.launch
 
@@ -58,6 +65,30 @@ fun LauncherShell(
     homeRequest: Int,
     modifier: Modifier = Modifier,
 ) {
+    val appsViewModel: AppsViewModel = viewModel()
+    val appsUiState by appsViewModel.uiState.collectAsStateWithLifecycle()
+
+    LauncherShellContent(
+        homeRequest = homeRequest,
+        appsUiState = appsUiState,
+        onAppQueryChanged = appsViewModel::updateQuery,
+        onClearAppQuery = appsViewModel::clearQuery,
+        onAppClicked = appsViewModel::launchApp,
+        onRetryApps = appsViewModel::refresh,
+        modifier = modifier,
+    )
+}
+
+@Composable
+private fun LauncherShellContent(
+    homeRequest: Int,
+    appsUiState: AppsUiState,
+    onAppQueryChanged: (String) -> Unit,
+    onClearAppQuery: () -> Unit,
+    onAppClicked: (LaunchableApp) -> Unit,
+    onRetryApps: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val destinations = LauncherDestination.entries
     val pagerState = rememberPagerState(
         initialPage = DefaultDestination.ordinal,
@@ -66,6 +97,7 @@ fun LauncherShell(
     val scope = rememberCoroutineScope()
 
     fun returnHome() {
+        onClearAppQuery()
         if (pagerState.currentPage != DefaultDestination.ordinal) {
             scope.launch {
                 pagerState.animateScrollToPage(DefaultDestination.ordinal)
@@ -76,6 +108,7 @@ fun LauncherShell(
     BackHandler(onBack = ::returnHome)
 
     LaunchedEffect(homeRequest) {
+        onClearAppQuery()
         if (pagerState.currentPage != DefaultDestination.ordinal) {
             pagerState.animateScrollToPage(DefaultDestination.ordinal)
         }
@@ -109,7 +142,13 @@ fun LauncherShell(
                 when (destinations[page]) {
                     LauncherDestination.Hub -> HubPlaceholder()
                     LauncherDestination.ActiveFrames -> ActiveFramesPlaceholder()
-                    LauncherDestination.Apps -> AppsPlaceholder()
+                    LauncherDestination.Apps -> AppsScreen(
+                        uiState = appsUiState,
+                        onQueryChanged = onAppQueryChanged,
+                        onClearQuery = onClearAppQuery,
+                        onAppClicked = onAppClicked,
+                        onRetry = onRetryApps,
+                    )
                 }
             }
             LauncherNavigation(
@@ -234,43 +273,6 @@ private fun ActiveFramesPlaceholder(modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun AppsPlaceholder(modifier: Modifier = Modifier) {
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(4),
-        modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalArrangement = Arrangement.spacedBy(20.dp),
-    ) {
-        items((1..16).toList()) { index ->
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(7.dp),
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(56.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(
-                            if (index % 3 == 0) {
-                                MaterialTheme.colorScheme.primary.copy(alpha = 0.75f)
-                            } else {
-                                MaterialTheme.colorScheme.surfaceVariant
-                            },
-                        ),
-                )
-                Text(
-                    text = stringResource(R.string.app_placeholder, index),
-                    color = MaterialTheme.colorScheme.onBackground,
-                    fontSize = 11.sp,
-                    maxLines = 1,
-                )
-            }
-        }
-    }
-}
-
-@Composable
 private fun LauncherNavigation(
     selectedDestination: LauncherDestination,
     onDestinationSelected: (LauncherDestination) -> Unit,
@@ -327,6 +329,13 @@ private fun LauncherNavigation(
 @Composable
 private fun LauncherShellPreview() {
     BBLauncherTheme {
-        LauncherShell(homeRequest = 0)
+        LauncherShellContent(
+            homeRequest = 0,
+            appsUiState = remember { AppsUiState(isLoading = false) },
+            onAppQueryChanged = {},
+            onClearAppQuery = {},
+            onAppClicked = {},
+            onRetryApps = {},
+        )
     }
 }

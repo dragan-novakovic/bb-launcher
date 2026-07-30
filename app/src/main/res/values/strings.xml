@@ -7,5 +7,10 @@
     <string name="hub_empty_title">Your Hub is quiet</string>
     <string name="hub_empty_description">Notification access will bring conversations and alerts together here.</string>
     <string name="frame_placeholder">Frame %1$d</string>
-    <string name="app_placeholder">App %1$d</string>
+    <string name="search_apps">Search apps</string>
+    <string name="clear_search">Clear search</string>
+    <string name="no_apps_available">No launchable applications are available.</string>
+    <string name="no_apps_match">No applications match “%1$s”.</string>
+    <string name="apps_load_failed">Unable to read installed applications. Tap to retry.</string>
+    <string name="app_launch_failed">Unable to open that application. Tap to refresh the app list.</string>
 </resources>
