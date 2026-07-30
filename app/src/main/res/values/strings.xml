@@ -20,4 +20,9 @@
     <string name="apps_load_failed">Unable to read installed applications. Tap to retry.</string>
     <string name="app_launch_failed">Unable to open that application. Tap to refresh the app list.</string>
     <string name="recent_apps_save_failed">The app opened, but its Active Frame could not be saved.</string>
+    <string name="connection_wifi">Wi-Fi</string>
+    <string name="connection_mobile">Mobile</string>
+    <string name="connection_online">Online</string>
+    <string name="connection_offline">Offline</string>
+    <string name="status_bar_description">Open Hub. %1$s, %2$s, battery %3$d percent.</string>
 </resources>

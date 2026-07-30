@@ -11,13 +11,15 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -48,10 +50,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.dragannovakovic.bblauncher.R
 import com.dragannovakovic.bblauncher.data.apps.LaunchableApp
+import com.dragannovakovic.bblauncher.data.system.SystemStatus
 import com.dragannovakovic.bblauncher.ui.apps.AppsScreen
 import com.dragannovakovic.bblauncher.ui.apps.AppsUiState
 import com.dragannovakovic.bblauncher.ui.apps.AppsViewModel
 import com.dragannovakovic.bblauncher.ui.frames.ActiveFramesScreen
+import com.dragannovakovic.bblauncher.ui.status.BBStatusBar
+import com.dragannovakovic.bblauncher.ui.status.StatusBarViewModel
 import com.dragannovakovic.bblauncher.ui.theme.BBLauncherTheme
 import kotlinx.coroutines.launch
 
@@ -63,11 +68,14 @@ fun LauncherShell(
     modifier: Modifier = Modifier,
 ) {
     val appsViewModel: AppsViewModel = viewModel()
+    val statusBarViewModel: StatusBarViewModel = viewModel()
     val appsUiState by appsViewModel.uiState.collectAsStateWithLifecycle()
+    val systemStatus by statusBarViewModel.status.collectAsStateWithLifecycle()
 
     LauncherShellContent(
         homeRequest = homeRequest,
         appsUiState = appsUiState,
+        systemStatus = systemStatus,
         onAppQueryChanged = appsViewModel::updateQuery,
         onClearAppQuery = appsViewModel::clearQuery,
         onAppClicked = appsViewModel::launchApp,
@@ -80,6 +88,7 @@ fun LauncherShell(
 private fun LauncherShellContent(
     homeRequest: Int,
     appsUiState: AppsUiState,
+    systemStatus: SystemStatus,
     onAppQueryChanged: (String) -> Unit,
     onClearAppQuery: () -> Unit,
     onAppClicked: (LaunchableApp) -> Unit,
@@ -92,6 +101,15 @@ private fun LauncherShellContent(
         pageCount = destinations::size,
     )
     val scope = rememberCoroutineScope()
+
+    fun navigateTo(destination: LauncherDestination) {
+        scope.launch {
+            pagerState.animateScrollToPage(
+                page = destination.ordinal,
+                animationSpec = tween(durationMillis = 260),
+            )
+        }
+    }
 
     fun returnHome() {
         onClearAppQuery()
@@ -125,8 +143,14 @@ private fun LauncherShellContent(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .windowInsetsPadding(WindowInsets.systemBars),
+                .windowInsetsPadding(
+                    WindowInsets.navigationBars.only(WindowInsetsSides.Bottom),
+                ),
         ) {
+            BBStatusBar(
+                status = systemStatus,
+                onOpenHub = { navigateTo(LauncherDestination.Hub) },
+            )
             PageHeading(
                 destination = destinations[pagerState.currentPage],
                 modifier = Modifier.padding(horizontal = 20.dp, vertical = 14.dp),
@@ -153,14 +177,7 @@ private fun LauncherShellContent(
             }
             LauncherNavigation(
                 selectedDestination = destinations[pagerState.currentPage],
-                onDestinationSelected = { destination ->
-                    scope.launch {
-                        pagerState.animateScrollToPage(
-                            page = destination.ordinal,
-                            animationSpec = tween(durationMillis = 260),
-                        )
-                    }
-                },
+                onDestinationSelected = ::navigateTo,
             )
         }
     }
@@ -282,6 +299,13 @@ private fun LauncherShellPreview() {
         LauncherShellContent(
             homeRequest = 0,
             appsUiState = remember { AppsUiState(isLoading = false) },
+            systemStatus = remember {
+                SystemStatus(
+                    batteryLevel = 73,
+                    isCharging = true,
+                    connectionType = com.dragannovakovic.bblauncher.data.system.ConnectionType.Wifi,
+                )
+            },
             onAppQueryChanged = {},
             onClearAppQuery = {},
             onAppClicked = {},
