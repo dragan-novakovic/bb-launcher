@@ -1,0 +1,332 @@
+package com.dragannovakovic.bblauncher.ui.launcher
+
+import androidx.activity.compose.BackHandler
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.dragannovakovic.bblauncher.R
+import com.dragannovakovic.bblauncher.ui.theme.BBLauncherTheme
+import kotlinx.coroutines.launch
+
+private val DefaultDestination = LauncherDestination.ActiveFrames
+
+@Composable
+fun LauncherShell(
+    homeRequest: Int,
+    modifier: Modifier = Modifier,
+) {
+    val destinations = LauncherDestination.entries
+    val pagerState = rememberPagerState(
+        initialPage = DefaultDestination.ordinal,
+        pageCount = destinations::size,
+    )
+    val scope = rememberCoroutineScope()
+
+    fun returnHome() {
+        if (pagerState.currentPage != DefaultDestination.ordinal) {
+            scope.launch {
+                pagerState.animateScrollToPage(DefaultDestination.ordinal)
+            }
+        }
+    }
+
+    BackHandler(onBack = ::returnHome)
+
+    LaunchedEffect(homeRequest) {
+        if (pagerState.currentPage != DefaultDestination.ordinal) {
+            pagerState.animateScrollToPage(DefaultDestination.ordinal)
+        }
+    }
+
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .background(
+                Brush.verticalGradient(
+                    0f to Color(0xFF283034),
+                    0.48f to Color(0xFF111517),
+                    1f to MaterialTheme.colorScheme.background,
+                ),
+            ),
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .windowInsetsPadding(WindowInsets.systemBars),
+        ) {
+            PageHeading(
+                destination = destinations[pagerState.currentPage],
+                modifier = Modifier.padding(horizontal = 20.dp, vertical = 14.dp),
+            )
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier.weight(1f),
+                key = { page -> destinations[page].name },
+            ) { page ->
+                when (destinations[page]) {
+                    LauncherDestination.Hub -> HubPlaceholder()
+                    LauncherDestination.ActiveFrames -> ActiveFramesPlaceholder()
+                    LauncherDestination.Apps -> AppsPlaceholder()
+                }
+            }
+            LauncherNavigation(
+                selectedDestination = destinations[pagerState.currentPage],
+                onDestinationSelected = { destination ->
+                    scope.launch {
+                        pagerState.animateScrollToPage(
+                            page = destination.ordinal,
+                            animationSpec = tween(durationMillis = 260),
+                        )
+                    }
+                },
+            )
+        }
+    }
+}
+
+@Composable
+private fun PageHeading(
+    destination: LauncherDestination,
+    modifier: Modifier = Modifier,
+) {
+    Text(
+        text = stringResource(destination.labelRes),
+        modifier = modifier,
+        color = MaterialTheme.colorScheme.onBackground,
+        fontSize = 30.sp,
+        fontWeight = FontWeight.Light,
+        letterSpacing = 0.6.sp,
+    )
+}
+
+@Composable
+private fun HubPlaceholder(modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(horizontal = 20.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(18.dp),
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(72.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.16f)),
+                contentAlignment = Alignment.Center,
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(24.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primary),
+                )
+            }
+            Text(
+                text = stringResource(R.string.hub_empty_title),
+                color = MaterialTheme.colorScheme.onBackground,
+                style = MaterialTheme.typography.titleMedium,
+            )
+            Text(
+                text = stringResource(R.string.hub_empty_description),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodyMedium,
+                textAlign = TextAlign.Center,
+            )
+        }
+    }
+}
+
+@Composable
+private fun ActiveFramesPlaceholder(modifier: Modifier = Modifier) {
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(2),
+        modifier = modifier.fillMaxSize(),
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        items(4) { index ->
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(0.82f)
+                    .clip(RoundedCornerShape(2.dp))
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                Color(0xFF354044),
+                                MaterialTheme.colorScheme.surface,
+                            ),
+                        ),
+                    )
+                    .padding(14.dp),
+                verticalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(28.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.82f)),
+                )
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(
+                        text = stringResource(R.string.frame_placeholder, index + 1),
+                        color = MaterialTheme.colorScheme.onSurface,
+                        style = MaterialTheme.typography.titleSmall,
+                    )
+                    Spacer(
+                        modifier = Modifier
+                            .fillMaxWidth(0.7f)
+                            .height(2.dp)
+                            .background(MaterialTheme.colorScheme.outline.copy(alpha = 0.55f)),
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun AppsPlaceholder(modifier: Modifier = Modifier) {
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(4),
+        modifier = modifier.fillMaxSize(),
+        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(20.dp),
+    ) {
+        items((1..16).toList()) { index ->
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(7.dp),
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(56.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(
+                            if (index % 3 == 0) {
+                                MaterialTheme.colorScheme.primary.copy(alpha = 0.75f)
+                            } else {
+                                MaterialTheme.colorScheme.surfaceVariant
+                            },
+                        ),
+                )
+                Text(
+                    text = stringResource(R.string.app_placeholder, index),
+                    color = MaterialTheme.colorScheme.onBackground,
+                    fontSize = 11.sp,
+                    maxLines = 1,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun LauncherNavigation(
+    selectedDestination: LauncherDestination,
+    onDestinationSelected: (LauncherDestination) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(68.dp)
+            .background(Color.Black.copy(alpha = 0.8f))
+            .selectableGroup(),
+    ) {
+        LauncherDestination.entries.forEach { destination ->
+            val selected = destination == selectedDestination
+            val contentColor by animateColorAsState(
+                targetValue = if (selected) {
+                    MaterialTheme.colorScheme.primary
+                } else {
+                    MaterialTheme.colorScheme.onSurfaceVariant
+                },
+                label = "navigation color",
+            )
+
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight()
+                    .selectable(
+                        selected = selected,
+                        role = Role.Tab,
+                        onClick = { onDestinationSelected(destination) },
+                    ),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(width = if (selected) 22.dp else 16.dp, height = 3.dp)
+                        .background(contentColor),
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = stringResource(destination.labelRes),
+                    color = contentColor,
+                    fontSize = 11.sp,
+                    fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+                )
+            }
+        }
+    }
+}
+
+@Preview(showBackground = true, widthDp = 393, heightDp = 873)
+@Composable
+private fun LauncherShellPreview() {
+    BBLauncherTheme {
+        LauncherShell(homeRequest = 0)
+    }
+}

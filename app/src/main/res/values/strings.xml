@@ -1,4 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">BB Launcher</string>
+    <string name="destination_hub">Hub</string>
+    <string name="destination_active_frames">Active Frames</string>
+    <string name="destination_apps">Apps</string>
+    <string name="hub_empty_title">Your Hub is quiet</string>
+    <string name="hub_empty_description">Notification access will bring conversations and alerts together here.</string>
+    <string name="frame_placeholder">Frame %1$d</string>
+    <string name="app_placeholder">App %1$d</string>
 </resources>
