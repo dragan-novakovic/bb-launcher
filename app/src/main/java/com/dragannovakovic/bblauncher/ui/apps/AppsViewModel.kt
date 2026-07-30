@@ -8,6 +8,8 @@ import androidx.lifecycle.viewModelScope
 import com.dragannovakovic.bblauncher.R
 import com.dragannovakovic.bblauncher.data.apps.AppCatalogRepository
 import com.dragannovakovic.bblauncher.data.apps.LaunchableApp
+import com.dragannovakovic.bblauncher.data.apps.RecentAppsRepository
+import java.io.IOException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -17,6 +19,7 @@ import kotlinx.coroutines.launch
 
 class AppsViewModel(application: Application) : AndroidViewModel(application) {
     private val repository = AppCatalogRepository(application)
+    private val recentAppsRepository = RecentAppsRepository(application)
     private val catalog = MutableStateFlow<List<LaunchableApp>>(emptyList())
     private val query = MutableStateFlow("")
     private val isLoading = MutableStateFlow(true)
@@ -25,12 +28,22 @@ class AppsViewModel(application: Application) : AndroidViewModel(application) {
     private val packageCallback: LauncherApps.Callback =
         repository.registerPackageChangeCallback(::refresh)
 
-    val uiState = combine(
+    private val catalogWithRecents = combine(
         catalog,
+        recentAppsRepository.recentComponentNames,
+    ) { apps, recentComponentNames ->
+        val appsByComponent = apps.associateBy { app ->
+            app.componentName.flattenToString()
+        }
+        apps to recentComponentNames.mapNotNull(appsByComponent::get)
+    }
+
+    val uiState = combine(
+        catalogWithRecents,
         query,
         isLoading,
         messageRes,
-    ) { apps, currentQuery, loading, message ->
+    ) { (apps, recentApps), currentQuery, loading, message ->
         AppsUiState(
             apps = apps.filter { app ->
                 matchesAppQuery(
@@ -39,6 +52,7 @@ class AppsViewModel(application: Application) : AndroidViewModel(application) {
                     query = currentQuery,
                 )
             },
+            recentApps = recentApps,
             query = currentQuery,
             isLoading = loading,
             messageRes = message,
@@ -82,6 +96,13 @@ class AppsViewModel(application: Application) : AndroidViewModel(application) {
         messageRes.value = null
         try {
             repository.launch(app)
+            viewModelScope.launch {
+                try {
+                    recentAppsRepository.record(app.componentName.flattenToString())
+                } catch (_: IOException) {
+                    messageRes.value = R.string.recent_apps_save_failed
+                }
+            }
         } catch (_: ActivityNotFoundException) {
             messageRes.value = R.string.app_launch_failed
         } catch (_: SecurityException) {

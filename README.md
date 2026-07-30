@@ -4,7 +4,7 @@ An Android 16 launcher that recreates the interaction model and visual character
 
 ## Current status
 
-The project contains a dark, edge-to-edge Jetpack Compose application targeting API 36. It is registered as an Android Home application and provides the initial Hub and Active Frames shell plus a searchable grid of installed applications.
+The project contains a dark, edge-to-edge Jetpack Compose application targeting API 36. It is registered as an Android Home application and provides a searchable app grid plus Active Frames for live time, battery state, and recently launched applications.
 
 ## Build
 

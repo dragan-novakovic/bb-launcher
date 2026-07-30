@@ -6,11 +6,18 @@
     <string name="destination_apps">Apps</string>
     <string name="hub_empty_title">Your Hub is quiet</string>
     <string name="hub_empty_description">Notification access will bring conversations and alerts together here.</string>
-    <string name="frame_placeholder">Frame %1$d</string>
+    <string name="frame_clock">Clock</string>
+    <string name="frame_device">Device</string>
+    <string name="frame_recent">Recent</string>
+    <string name="frame_recent_app">Recently opened</string>
+    <string name="frame_recent_empty">Applications you open from the launcher will become Active Frames.</string>
+    <string name="battery_percentage">%1$d%%</string>
+    <string name="battery_remaining">Battery remaining</string>
     <string name="search_apps">Search apps</string>
     <string name="clear_search">Clear search</string>
     <string name="no_apps_available">No launchable applications are available.</string>
     <string name="no_apps_match">No applications match “%1$s”.</string>
     <string name="apps_load_failed">Unable to read installed applications. Tap to retry.</string>
     <string name="app_launch_failed">Unable to open that application. Tap to refresh the app list.</string>
+    <string name="recent_apps_save_failed">The app opened, but its Active Frame could not be saved.</string>
 </resources>

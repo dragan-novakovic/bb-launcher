@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -20,9 +19,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.selection.selectable
@@ -55,6 +51,7 @@ import com.dragannovakovic.bblauncher.data.apps.LaunchableApp
 import com.dragannovakovic.bblauncher.ui.apps.AppsScreen
 import com.dragannovakovic.bblauncher.ui.apps.AppsUiState
 import com.dragannovakovic.bblauncher.ui.apps.AppsViewModel
+import com.dragannovakovic.bblauncher.ui.frames.ActiveFramesScreen
 import com.dragannovakovic.bblauncher.ui.theme.BBLauncherTheme
 import kotlinx.coroutines.launch
 
@@ -141,7 +138,10 @@ private fun LauncherShellContent(
             ) { page ->
                 when (destinations[page]) {
                     LauncherDestination.Hub -> HubPlaceholder()
-                    LauncherDestination.ActiveFrames -> ActiveFramesPlaceholder()
+                    LauncherDestination.ActiveFrames -> ActiveFramesScreen(
+                        recentApps = appsUiState.recentApps,
+                        onAppClicked = onAppClicked,
+                    )
                     LauncherDestination.Apps -> AppsScreen(
                         uiState = appsUiState,
                         onQueryChanged = onAppQueryChanged,
@@ -218,56 +218,6 @@ private fun HubPlaceholder(modifier: Modifier = Modifier) {
                 style = MaterialTheme.typography.bodyMedium,
                 textAlign = TextAlign.Center,
             )
-        }
-    }
-}
-
-@Composable
-private fun ActiveFramesPlaceholder(modifier: Modifier = Modifier) {
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(2),
-        modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp),
-    ) {
-        items(4) { index ->
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(0.82f)
-                    .clip(RoundedCornerShape(2.dp))
-                    .background(
-                        Brush.verticalGradient(
-                            colors = listOf(
-                                Color(0xFF354044),
-                                MaterialTheme.colorScheme.surface,
-                            ),
-                        ),
-                    )
-                    .padding(14.dp),
-                verticalArrangement = Arrangement.SpaceBetween,
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(28.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.82f)),
-                )
-                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text(
-                        text = stringResource(R.string.frame_placeholder, index + 1),
-                        color = MaterialTheme.colorScheme.onSurface,
-                        style = MaterialTheme.typography.titleSmall,
-                    )
-                    Spacer(
-                        modifier = Modifier
-                            .fillMaxWidth(0.7f)
-                            .height(2.dp)
-                            .background(MaterialTheme.colorScheme.outline.copy(alpha = 0.55f)),
-                    )
-                }
-            }
         }
     }
 }
