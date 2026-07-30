@@ -31,6 +31,10 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.BBLauncher">
         <activity
+            android:name=".settings.LauncherSettingsActivity"
+            android:exported="false"
+            android:label="@string/setup_title" />
+        <activity
             android:name=".MainActivity"
             android:clearTaskOnLaunch="true"
             android:excludeFromRecents="true"

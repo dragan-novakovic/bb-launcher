@@ -50,7 +50,7 @@
     <string name="quick_rotation">Rotation</string>
     <string name="quick_volume">Volume</string>
     <string name="quick_display">Display</string>
-    <string name="quick_settings">Settings</string>
+    <string name="quick_settings">BB Setup</string>
     <string name="quick_home">Home app</string>
     <string name="flashlight_unavailable">This device does not expose a flashlight.</string>
     <string name="flashlight_failed">The flashlight is currently unavailable.</string>
@@ -58,4 +58,28 @@
     <string name="write_settings_required">Allow BB Launcher to modify system settings before changing rotation.</string>
     <string name="rotation_update_failed">Android did not accept the rotation change.</string>
     <string name="settings_panel_unavailable">That Android settings panel is unavailable.</string>
+    <string name="setup_title">Launcher setup</string>
+    <string name="setup_description">Enable only the Android access needed by the features you want to use. Privileged SystemUI permissions are not available to a stock-device app.</string>
+    <string name="close_setup">Close</string>
+    <string name="setup_granted">ENABLED</string>
+    <string name="setup_required">ACTION NEEDED</string>
+    <string name="setup_home_title">Default Home app</string>
+    <string name="setup_home_description">Makes BB Launcher open when you press Home or finish the system unlock gesture.</string>
+    <string name="setup_home_action">Choose Home app</string>
+    <string name="setup_notifications_title">Notification access</string>
+    <string name="setup_notifications_description">Feeds Android notifications into the BlackBerry-style Hub and lets you dismiss them.</string>
+    <string name="setup_notifications_action">Open special access</string>
+    <string name="setup_rotation_title">Modify system settings</string>
+    <string name="setup_rotation_description">Allows the Rotation quick setting to change Android’s auto-rotate preference.</string>
+    <string name="setup_rotation_action">Allow changes</string>
+    <string name="setup_flashlight_title">Camera access for flashlight</string>
+    <string name="setup_flashlight_description">Android protects torch control with the Camera runtime permission. BB Launcher does not capture photos or video.</string>
+    <string name="setup_flashlight_action">Allow flashlight</string>
+    <string name="setup_hyperos_title">HyperOS background behavior</string>
+    <string name="setup_hyperos_description">If Hub updates stop, enable Autostart and choose No restrictions for BB Launcher in Xiaomi’s app battery settings.</string>
+    <string name="setup_hyperos_action">Open app settings</string>
+    <string name="setup_system_ui_title">Stock Android boundary</string>
+    <string name="setup_system_ui_description">The BB10 bar and shade replace SystemUI only while this launcher is visible. HyperOS controls the real bar inside other apps.</string>
+    <string name="setup_android_settings">Open Android settings</string>
+    <string name="setup_action_unavailable">That settings screen is unavailable on this device.</string>
 </resources>

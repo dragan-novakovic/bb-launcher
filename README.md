@@ -20,6 +20,16 @@ Requirements:
 
 The debug APK is written to `app/build/outputs/apk/debug/app-debug.apk`.
 
+## Device setup
+
+Open **BB Setup** from the launcher shade to:
+
+1. Select BB Launcher as the default Home app.
+2. Enable notification access for the Hub.
+3. Allow system-setting changes for the rotation tile.
+4. Optionally allow Camera access for flashlight control.
+5. On HyperOS, review Autostart and battery restrictions if Hub updates stop.
+
 ## Platform boundary
 
 Stock Android does not allow a third-party launcher to replace the real status bar, notification shade, or Quick Settings outside the launcher. BB Launcher will provide those surfaces while it is active and use public Android APIs for notification access and supported controls.

@@ -15,6 +15,7 @@ import android.provider.Settings
 import androidx.core.net.toUri
 import androidx.lifecycle.AndroidViewModel
 import com.dragannovakovic.bblauncher.R
+import com.dragannovakovic.bblauncher.settings.LauncherSettingsActivity
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -108,7 +109,7 @@ class QuickSettingsViewModel(application: Application) : AndroidViewModel(applic
     }
 
     fun openSystemSettings() {
-        openIntent(Intent(Settings.ACTION_SETTINGS))
+        openIntent(Intent(appContext, LauncherSettingsActivity::class.java))
     }
 
     fun openHomeSettings() {
