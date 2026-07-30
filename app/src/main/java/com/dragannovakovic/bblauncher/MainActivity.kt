@@ -5,13 +5,15 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.runtime.mutableIntStateOf
 import com.dragannovakovic.bblauncher.ui.launcher.LauncherShell
 import com.dragannovakovic.bblauncher.ui.system.hideLauncherStatusBar
 import com.dragannovakovic.bblauncher.ui.theme.BBLauncherTheme
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.receiveAsFlow
 
 class MainActivity : ComponentActivity() {
-    private val homeRequest = mutableIntStateOf(0)
+    private val homeRequestChannel = Channel<Unit>(capacity = Channel.CONFLATED)
+    private val homeRequestEvents = homeRequestChannel.receiveAsFlow()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -19,7 +21,7 @@ class MainActivity : ComponentActivity() {
         hideLauncherStatusBar()
         setContent {
             BBLauncherTheme {
-                LauncherShell(homeRequest = homeRequest.intValue)
+                LauncherShell(homeRequestEvents = homeRequestEvents)
             }
         }
     }
@@ -27,7 +29,7 @@ class MainActivity : ComponentActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
-        homeRequest.intValue++
+        homeRequestChannel.trySend(Unit)
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {

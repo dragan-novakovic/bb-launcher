@@ -54,7 +54,6 @@
     <string name="quick_home">Home app</string>
     <string name="flashlight_unavailable">This device does not expose a flashlight.</string>
     <string name="flashlight_failed">The flashlight is currently unavailable.</string>
-    <string name="camera_permission_required">Camera permission is required to control the flashlight.</string>
     <string name="write_settings_required">Allow BB Launcher to modify system settings before changing rotation.</string>
     <string name="rotation_update_failed">Android did not accept the rotation change.</string>
     <string name="settings_panel_unavailable">That Android settings panel is unavailable.</string>
@@ -72,9 +71,6 @@
     <string name="setup_rotation_title">Modify system settings</string>
     <string name="setup_rotation_description">Allows the Rotation quick setting to change Android’s auto-rotate preference.</string>
     <string name="setup_rotation_action">Allow changes</string>
-    <string name="setup_flashlight_title">Camera access for flashlight</string>
-    <string name="setup_flashlight_description">Android protects torch control with the Camera runtime permission. BB Launcher does not capture photos or video.</string>
-    <string name="setup_flashlight_action">Allow flashlight</string>
     <string name="setup_hyperos_title">HyperOS background behavior</string>
     <string name="setup_hyperos_description">If Hub updates stop, enable Autostart and choose No restrictions for BB Launcher in Xiaomi’s app battery settings.</string>
     <string name="setup_hyperos_action">Open app settings</string>

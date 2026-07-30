@@ -1,12 +1,17 @@
 package com.dragannovakovic.bblauncher.data.apps
 
+import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.LauncherApps
 import android.content.pm.LauncherActivityInfo
 import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
-import android.os.Process
+import android.os.UserManager
+import android.util.Log
+import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -15,6 +20,7 @@ import java.text.Collator
 class AppCatalogRepository(context: Context) {
     private val appContext = context.applicationContext
     private val launcherApps = appContext.getSystemService(LauncherApps::class.java)
+    private val userManager = appContext.getSystemService(UserManager::class.java)
     private val density = appContext.resources.displayMetrics.densityDpi
     private val iconSize = (64 * appContext.resources.displayMetrics.density).toInt()
 
@@ -22,10 +28,13 @@ class AppCatalogRepository(context: Context) {
         val collator = Collator.getInstance()
 
         launcherApps
-            .getActivityList(null, Process.myUserHandle())
+            .profiles
             .asSequence()
+            .flatMap { user ->
+                launcherApps.getActivityList(null, user).asSequence()
+            }
             .filterNot { activity -> activity.componentName.packageName == appContext.packageName }
-            .map(::toLaunchableApp)
+            .mapNotNull(::toLaunchableApp)
             .sortedWith { first, second -> collator.compare(first.label, second.label) }
             .toList()
     }
@@ -39,8 +48,10 @@ class AppCatalogRepository(context: Context) {
         )
     }
 
-    fun registerPackageChangeCallback(onPackagesChanged: () -> Unit): LauncherApps.Callback {
-        val callback = object : LauncherApps.Callback() {
+    fun registerPackageChangeCallback(
+        onPackagesChanged: () -> Unit,
+    ): PackageChangeRegistration {
+        val launcherCallback = object : LauncherApps.Callback() {
             override fun onPackageAdded(packageName: String, user: android.os.UserHandle) {
                 onPackagesChanged()
             }
@@ -84,18 +95,49 @@ class AppCatalogRepository(context: Context) {
             }
         }
 
-        launcherApps.registerCallback(callback)
-        return callback
+        val profileReceiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context, intent: Intent) {
+                onPackagesChanged()
+            }
+        }
+        val profileFilter = IntentFilter().apply {
+            addAction(Intent.ACTION_MANAGED_PROFILE_ADDED)
+            addAction(Intent.ACTION_MANAGED_PROFILE_REMOVED)
+            addAction(Intent.ACTION_MANAGED_PROFILE_AVAILABLE)
+            addAction(Intent.ACTION_MANAGED_PROFILE_UNAVAILABLE)
+            addAction(Intent.ACTION_MANAGED_PROFILE_UNLOCKED)
+        }
+
+        launcherApps.registerCallback(launcherCallback)
+        ContextCompat.registerReceiver(
+            appContext,
+            profileReceiver,
+            profileFilter,
+            ContextCompat.RECEIVER_NOT_EXPORTED,
+        )
+        return PackageChangeRegistration(
+            launcherCallback = launcherCallback,
+            profileReceiver = profileReceiver,
+        )
     }
 
-    fun unregisterPackageChangeCallback(callback: LauncherApps.Callback) {
-        launcherApps.unregisterCallback(callback)
+    fun unregisterPackageChangeCallback(registration: PackageChangeRegistration) {
+        launcherApps.unregisterCallback(registration.launcherCallback)
+        appContext.unregisterReceiver(registration.profileReceiver)
     }
 
-    private fun toLaunchableApp(activity: LauncherActivityInfo): LaunchableApp {
+    private fun toLaunchableApp(activity: LauncherActivityInfo): LaunchableApp? {
         val componentName = activity.componentName
+        val userSerial = userManager.getSerialNumberForUser(activity.user)
+        if (userSerial < 0) {
+            Log.e(
+                LogTag,
+                "Ignoring launcher activity for an unknown user: $componentName",
+            )
+            return null
+        }
         return LaunchableApp(
-            id = "${activity.user.hashCode()}:${componentName.flattenToString()}",
+            id = "$userSerial:${componentName.flattenToString()}",
             label = activity.label.toString(),
             componentName = componentName,
             user = activity.user,
@@ -112,7 +154,16 @@ class AppCatalogRepository(context: Context) {
 
         return drawable.toSquareBitmap(iconSize)
     }
+
+    companion object {
+        private const val LogTag = "AppCatalogRepository"
+    }
 }
+
+class PackageChangeRegistration internal constructor(
+    internal val launcherCallback: LauncherApps.Callback,
+    internal val profileReceiver: BroadcastReceiver,
+)
 
 private fun Drawable.toSquareBitmap(size: Int): Bitmap =
     toBitmap(

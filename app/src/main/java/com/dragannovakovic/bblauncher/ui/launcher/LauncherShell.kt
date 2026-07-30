@@ -18,9 +18,9 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.pager.HorizontalPager
@@ -65,12 +65,14 @@ import com.dragannovakovic.bblauncher.ui.status.BBStatusBar
 import com.dragannovakovic.bblauncher.ui.status.StatusBarViewModel
 import com.dragannovakovic.bblauncher.ui.theme.BBLauncherTheme
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 
 private val DefaultDestination = LauncherDestination.ActiveFrames
 
 @Composable
 fun LauncherShell(
-    homeRequest: Int,
+    homeRequestEvents: Flow<Unit>,
     modifier: Modifier = Modifier,
 ) {
     val appsViewModel: AppsViewModel = viewModel()
@@ -81,7 +83,7 @@ fun LauncherShell(
     val hubUiState by hubViewModel.uiState.collectAsStateWithLifecycle()
 
     LauncherShellContent(
-        homeRequest = homeRequest,
+        homeRequestEvents = homeRequestEvents,
         appsUiState = appsUiState,
         systemStatus = systemStatus,
         hubUiState = hubUiState,
@@ -100,7 +102,7 @@ fun LauncherShell(
 
 @Composable
 private fun LauncherShellContent(
-    homeRequest: Int,
+    homeRequestEvents: Flow<Unit>,
     appsUiState: AppsUiState,
     systemStatus: SystemStatus,
     hubUiState: HubUiState,
@@ -149,11 +151,15 @@ private fun LauncherShellContent(
         }
     }
 
-    LaunchedEffect(homeRequest) {
-        isShadeOpen = false
-        onClearAppQuery()
-        if (pagerState.currentPage != DefaultDestination.ordinal) {
-            pagerState.animateScrollToPage(DefaultDestination.ordinal)
+    LaunchedEffect(homeRequestEvents) {
+        homeRequestEvents.collect {
+            isShadeOpen = false
+            onClearAppQuery()
+            if (pagerState.currentPage != DefaultDestination.ordinal) {
+                scope.launch {
+                    pagerState.animateScrollToPage(DefaultDestination.ordinal)
+                }
+            }
         }
     }
 
@@ -172,7 +178,9 @@ private fun LauncherShellContent(
             modifier = Modifier
                 .fillMaxSize()
                 .windowInsetsPadding(
-                    WindowInsets.navigationBars.only(WindowInsetsSides.Bottom),
+                    WindowInsets.safeDrawing.only(
+                        WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom,
+                    ),
                 ),
         ) {
             BBStatusBar(
@@ -310,7 +318,7 @@ private fun LauncherNavigation(
 private fun LauncherShellPreview() {
     BBLauncherTheme {
         LauncherShellContent(
-            homeRequest = 0,
+            homeRequestEvents = emptyFlow(),
             appsUiState = remember { AppsUiState(isLoading = false) },
             systemStatus = remember {
                 SystemStatus(

@@ -10,7 +10,7 @@ android {
 
     defaultConfig {
         applicationId = "com.dragannovakovic.bblauncher"
-        minSdk = 28
+        minSdk = 30
         targetSdk = 36
         versionCode = 1
         versionName = "0.1.0"
@@ -51,6 +51,7 @@ kotlin {
 }
 
 dependencies {
+    // Newer AndroidX lines require API 37; these are the stable API 36-compatible releases.
     implementation("androidx.core:core-ktx:1.18.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.10.0")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.10.0")

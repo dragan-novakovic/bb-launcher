@@ -2,7 +2,6 @@ package com.dragannovakovic.bblauncher.ui.apps
 
 import android.app.Application
 import android.content.ActivityNotFoundException
-import android.content.pm.LauncherApps
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.dragannovakovic.bblauncher.R
@@ -25,17 +24,15 @@ class AppsViewModel(application: Application) : AndroidViewModel(application) {
     private val isLoading = MutableStateFlow(true)
     private val messageRes = MutableStateFlow<Int?>(null)
     private var refreshJob: Job? = null
-    private val packageCallback: LauncherApps.Callback =
+    private val packageCallback =
         repository.registerPackageChangeCallback(::refresh)
 
     private val catalogWithRecents = combine(
         catalog,
         recentAppsRepository.recentComponentNames,
     ) { apps, recentComponentNames ->
-        val appsByComponent = apps.associateBy { app ->
-            app.componentName.flattenToString()
-        }
-        apps to recentComponentNames.mapNotNull(appsByComponent::get)
+        val appsById = apps.associateBy(LaunchableApp::id)
+        apps to recentComponentNames.mapNotNull(appsById::get)
     }
 
     val uiState = combine(
@@ -98,7 +95,7 @@ class AppsViewModel(application: Application) : AndroidViewModel(application) {
             repository.launch(app)
             viewModelScope.launch {
                 try {
-                    recentAppsRepository.record(app.componentName.flattenToString())
+                    recentAppsRepository.record(app.id)
                 } catch (_: IOException) {
                     messageRes.value = R.string.recent_apps_save_failed
                 }

@@ -8,7 +8,6 @@ import android.database.ContentObserver
 import android.hardware.camera2.CameraAccessException
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
-import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
@@ -77,15 +76,7 @@ class QuickSettingsViewModel(application: Application) : AndroidViewModel(applic
     }
 
     fun openInternetPanel() {
-        openIntent(
-            Intent(
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    Settings.Panel.ACTION_INTERNET_CONNECTIVITY
-                } else {
-                    Settings.ACTION_WIRELESS_SETTINGS
-                },
-            ),
-        )
+        openIntent(Intent(Settings.Panel.ACTION_INTERNET_CONNECTIVITY))
     }
 
     fun openBluetoothSettings() {
@@ -93,15 +84,7 @@ class QuickSettingsViewModel(application: Application) : AndroidViewModel(applic
     }
 
     fun openVolumePanel() {
-        openIntent(
-            Intent(
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    Settings.Panel.ACTION_VOLUME
-                } else {
-                    Settings.ACTION_SOUND_SETTINGS
-                },
-            ),
-        )
+        openIntent(Intent(Settings.Panel.ACTION_VOLUME))
     }
 
     fun openDisplaySettings() {
@@ -141,20 +124,9 @@ class QuickSettingsViewModel(application: Application) : AndroidViewModel(applic
             }
         } catch (_: SecurityException) {
             mutableUiState.update { state ->
-                state.copy(messageRes = R.string.camera_permission_required)
+                state.copy(messageRes = R.string.flashlight_failed)
             }
         }
-    }
-
-    fun onCameraPermissionDenied() {
-        mutableUiState.update { state ->
-            state.copy(messageRes = R.string.camera_permission_required)
-        }
-    }
-
-    fun onCameraPermissionGranted() {
-        initializeTorch()
-        toggleTorch()
     }
 
     fun toggleAutoRotate() {
@@ -218,7 +190,9 @@ class QuickSettingsViewModel(application: Application) : AndroidViewModel(applic
                 state.copy(messageRes = R.string.flashlight_unavailable)
             }
         } catch (_: SecurityException) {
-            // The runtime permission flow is started when the user taps the tile.
+            mutableUiState.update { state ->
+                state.copy(messageRes = R.string.flashlight_unavailable)
+            }
         }
     }
 

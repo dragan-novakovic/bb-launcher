@@ -1,6 +1,5 @@
 package com.dragannovakovic.bblauncher.ui.settings
 
-import android.Manifest
 import android.app.role.RoleManager
 import android.content.ActivityNotFoundException
 import android.content.Context
@@ -18,15 +17,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBars
-import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
@@ -52,7 +48,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.NotificationManagerCompat
-import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -73,12 +68,6 @@ fun LauncherSetupScreen(
     ) {
         refreshCounter++
     }
-    val cameraPermissionLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission(),
-    ) {
-        refreshCounter++
-    }
-
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
@@ -98,10 +87,6 @@ fun LauncherSetupScreen(
                 .getEnabledListenerPackages(context)
                 .contains(context.packageName),
             canWriteSettings = Settings.System.canWrite(context),
-            hasCameraPermission = ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.CAMERA,
-            ) == PackageManager.PERMISSION_GRANTED,
         )
     }
 
@@ -117,17 +102,15 @@ fun LauncherSetupScreen(
     }
 
     fun requestHomeRole() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            val roleManager = context.getSystemService(RoleManager::class.java)
-            if (
-                roleManager.isRoleAvailable(RoleManager.ROLE_HOME) &&
-                !roleManager.isRoleHeld(RoleManager.ROLE_HOME)
-            ) {
-                homeRoleLauncher.launch(
-                    roleManager.createRequestRoleIntent(RoleManager.ROLE_HOME),
-                )
-                return
-            }
+        val roleManager = context.getSystemService(RoleManager::class.java)
+        if (
+            roleManager.isRoleAvailable(RoleManager.ROLE_HOME) &&
+            !roleManager.isRoleHeld(RoleManager.ROLE_HOME)
+        ) {
+            homeRoleLauncher.launch(
+                roleManager.createRequestRoleIntent(RoleManager.ROLE_HOME),
+            )
+            return
         }
         openIntent(Intent(Settings.ACTION_HOME_SETTINGS))
     }
@@ -143,12 +126,7 @@ fun LauncherSetupScreen(
                     ),
                 ),
             )
-            .windowInsetsPadding(
-                WindowInsets.displayCutout.only(WindowInsetsSides.Top),
-            )
-            .windowInsetsPadding(
-                WindowInsets.navigationBars.only(WindowInsetsSides.Bottom),
-            ),
+            .windowInsetsPadding(WindowInsets.safeDrawing),
     ) {
         item(key = "header") {
             SetupHeader(onClose = onClose)
@@ -215,18 +193,6 @@ fun LauncherSetupScreen(
                             "package:${context.packageName}".toUri(),
                         ),
                     )
-                },
-            )
-        }
-
-        item(key = "camera") {
-            SetupPermissionCard(
-                title = stringResource(R.string.setup_flashlight_title),
-                description = stringResource(R.string.setup_flashlight_description),
-                isGranted = permissionState.hasCameraPermission,
-                actionLabel = stringResource(R.string.setup_flashlight_action),
-                onAction = {
-                    cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
                 },
             )
         }
@@ -417,15 +383,12 @@ private data class LauncherPermissionState(
     val isDefaultHome: Boolean,
     val hasNotificationAccess: Boolean,
     val canWriteSettings: Boolean,
-    val hasCameraPermission: Boolean,
 )
 
 private fun Context.isDefaultHome(): Boolean {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-        val roleManager = getSystemService(RoleManager::class.java)
-        if (roleManager.isRoleAvailable(RoleManager.ROLE_HOME)) {
-            return roleManager.isRoleHeld(RoleManager.ROLE_HOME)
-        }
+    val roleManager = getSystemService(RoleManager::class.java)
+    if (roleManager.isRoleAvailable(RoleManager.ROLE_HOME)) {
+        return roleManager.isRoleHeld(RoleManager.ROLE_HOME)
     }
 
     val homeIntent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME)

@@ -49,7 +49,7 @@ class RecentAppsRepository(context: Context) {
     private companion object {
         const val LogTag = "RecentAppsRepository"
         val RecentAppsKey: Preferences.Key<String> =
-            stringPreferencesKey("recent_app_components")
+            stringPreferencesKey("recent_app_ids_v2")
     }
 }
 
