@@ -225,6 +225,7 @@ private fun LauncherShellContent(
         ) {
             NotificationShade(
                 uiState = hubUiState,
+                connectionType = systemStatus.connectionType,
                 onClose = { isShadeOpen = false },
                 onRequestAccess = onRequestNotificationAccess,
                 onRefreshAccess = onRefreshNotificationAccess,

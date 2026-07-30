@@ -35,6 +35,7 @@ import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
@@ -47,6 +48,8 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.dragannovakovic.bblauncher.R
 import com.dragannovakovic.bblauncher.data.notifications.HubNotification
+import com.dragannovakovic.bblauncher.data.system.ConnectionType
+import com.dragannovakovic.bblauncher.ui.quicksettings.QuickSettingsPanel
 
 @Composable
 fun HubScreen(
@@ -91,6 +94,7 @@ fun HubScreen(
 @Composable
 fun NotificationShade(
     uiState: HubUiState,
+    connectionType: ConnectionType,
     onClose: () -> Unit,
     onRequestAccess: () -> Unit,
     onRefreshAccess: () -> Unit,
@@ -152,6 +156,7 @@ fun NotificationShade(
                 fontWeight = FontWeight.SemiBold,
             )
         }
+        QuickSettingsPanel(connectionType = connectionType)
         HubScreen(
             uiState = uiState,
             onRequestAccess = onRequestAccess,
@@ -287,8 +292,9 @@ private fun NotificationGroups(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
-                    text = stringResource(
-                        R.string.notification_count,
+                    text = pluralStringResource(
+                        R.plurals.notification_count,
+                        uiState.notificationCount,
                         uiState.notificationCount,
                     ),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,

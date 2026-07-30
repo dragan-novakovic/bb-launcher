@@ -25,6 +25,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -38,6 +39,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -62,7 +64,7 @@ fun BBStatusBar(
     val context = LocalContext.current
     val density = LocalDensity.current
     var now by remember { mutableStateOf(LocalTime.now()) }
-    var downwardDrag by remember { mutableStateOf(0f) }
+    var downwardDrag by remember { mutableFloatStateOf(0f) }
     val openThreshold = with(density) { 28.dp.toPx() }
     val dragState = rememberDraggableState { delta ->
         if (delta > 0f) {
@@ -82,8 +84,9 @@ fun BBStatusBar(
         now.format(DateTimeFormatter.ofPattern(timePattern))
     }
     val connectionDescription = stringResource(status.connectionType.descriptionRes)
-    val accessibilityDescription = stringResource(
-        R.string.status_bar_description,
+    val accessibilityDescription = pluralStringResource(
+        R.plurals.status_bar_description,
+        notificationCount,
         formattedTime,
         connectionDescription,
         status.batteryLevel,
