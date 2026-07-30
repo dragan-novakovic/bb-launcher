@@ -26,7 +26,7 @@ class RecentAppsRepositoryTest {
         ).joinToString("\n")
 
         assertEquals(
-            listOf("one", "two", "three", "four"),
+            listOf("one", "two", "three", "four", "five"),
             decodeRecentComponents(encoded),
         )
     }

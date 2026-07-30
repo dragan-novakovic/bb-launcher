@@ -63,6 +63,8 @@ fun BBStatusBar(
 ) {
     val context = LocalContext.current
     val density = LocalDensity.current
+    val fontScale = density.fontScale
+    val barHeight = 24.dp + ((fontScale - 1f).coerceAtLeast(0f) * 14f).dp
     var now by remember { mutableStateOf(LocalTime.now()) }
     var downwardDrag by remember { mutableFloatStateOf(0f) }
     val openThreshold = with(density) { 28.dp.toPx() }
@@ -100,7 +102,7 @@ fun BBStatusBar(
             .windowInsetsPadding(
                 WindowInsets.displayCutout.only(WindowInsetsSides.Top),
             )
-            .height(30.dp)
+            .height(barHeight)
             .clickable(role = Role.Button, onClick = onOpenHub)
             .draggable(
                 state = dragState,
@@ -116,62 +118,56 @@ fun BBStatusBar(
             .semantics {
                 contentDescription = accessibilityDescription
             }
-            .padding(horizontal = 10.dp),
+            .padding(horizontal = 7.dp),
     ) {
         Row(
             modifier = Modifier.align(Alignment.CenterStart),
-            horizontalArrangement = Arrangement.spacedBy(7.dp),
+            horizontalArrangement = Arrangement.spacedBy(5.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             if (notificationCount > 0) {
                 Box(
                     modifier = Modifier
-                        .size(17.dp)
+                        .size(14.dp)
                         .background(MaterialTheme.colorScheme.primary, CircleShape),
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(
                         text = notificationCount.coerceAtMost(99).toString(),
                         color = MaterialTheme.colorScheme.onPrimary,
-                        fontSize = 9.sp,
+                        fontSize = 8.sp,
                         fontWeight = FontWeight.Bold,
                     )
                 }
             }
             ConnectionIcon(connectionType = status.connectionType)
-            Text(
-                text = connectionDescription,
-                color = Color.White.copy(alpha = 0.9f),
-                fontSize = 10.sp,
-                fontWeight = FontWeight.Medium,
-            )
         }
 
         Text(
             text = formattedTime,
             modifier = Modifier.align(Alignment.Center),
             color = Color.White,
-            fontSize = 12.sp,
+            fontSize = 10.sp,
             fontWeight = FontWeight.SemiBold,
             letterSpacing = 0.3.sp,
         )
 
         Row(
             modifier = Modifier.align(Alignment.CenterEnd),
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             if (status.isCharging) {
                 Text(
-                    text = "\u26A1",
+                    text = "\u26A1\uFE0E",
                     color = MaterialTheme.colorScheme.primary,
-                    fontSize = 11.sp,
+                    fontSize = 9.sp,
                 )
             }
             Text(
                 text = "${status.batteryLevel}%",
                 color = Color.White.copy(alpha = 0.92f),
-                fontSize = 10.sp,
+                fontSize = 9.sp,
             )
             BatteryIcon(level = status.batteryLevel)
         }
@@ -193,8 +189,8 @@ private fun ConnectionIcon(
 
 @Composable
 private fun WifiIcon(modifier: Modifier = Modifier) {
-    Canvas(modifier = modifier.size(width = 17.dp, height = 13.dp)) {
-        val stroke = Stroke(width = 1.6.dp.toPx(), cap = StrokeCap.Round)
+    Canvas(modifier = modifier.size(width = 14.dp, height = 10.dp)) {
+        val stroke = Stroke(width = 1.3.dp.toPx(), cap = StrokeCap.Round)
         drawArc(
             color = Color.White,
             startAngle = 225f,
@@ -215,8 +211,8 @@ private fun WifiIcon(modifier: Modifier = Modifier) {
         )
         drawCircle(
             color = Color.White,
-            radius = 1.3.dp.toPx(),
-            center = Offset(size.width / 2f, size.height - 1.2.dp.toPx()),
+            radius = 1.dp.toPx(),
+            center = Offset(size.width / 2f, size.height - 0.8.dp.toPx()),
         )
     }
 }
@@ -224,14 +220,14 @@ private fun WifiIcon(modifier: Modifier = Modifier) {
 @Composable
 private fun CellularIcon(modifier: Modifier = Modifier) {
     Row(
-        modifier = modifier.size(width = 17.dp, height = 13.dp),
-        horizontalArrangement = Arrangement.spacedBy(1.5.dp),
+        modifier = modifier.size(width = 14.dp, height = 10.dp),
+        horizontalArrangement = Arrangement.spacedBy(1.dp),
         verticalAlignment = Alignment.Bottom,
     ) {
-        listOf(4.dp, 7.dp, 10.dp, 13.dp).forEach { height ->
+        listOf(3.dp, 5.dp, 7.dp, 10.dp).forEach { height ->
             Box(
                 modifier = Modifier
-                    .size(width = 2.5.dp, height = height)
+                    .size(width = 2.dp, height = height)
                     .background(Color.White),
             )
         }
@@ -240,32 +236,32 @@ private fun CellularIcon(modifier: Modifier = Modifier) {
 
 @Composable
 private fun ConnectedIcon(modifier: Modifier = Modifier) {
-    Canvas(modifier = modifier.size(13.dp)) {
+    Canvas(modifier = modifier.size(10.dp)) {
         drawCircle(
             color = Color.White,
             radius = size.minDimension / 2f,
-            style = Stroke(width = 1.5.dp.toPx()),
+            style = Stroke(width = 1.2.dp.toPx()),
         )
         drawCircle(
             color = Color.White,
-            radius = 2.dp.toPx(),
+            radius = 1.5.dp.toPx(),
         )
     }
 }
 
 @Composable
 private fun OfflineIcon(modifier: Modifier = Modifier) {
-    Canvas(modifier = modifier.size(13.dp)) {
+    Canvas(modifier = modifier.size(10.dp)) {
         drawCircle(
             color = Color.White.copy(alpha = 0.65f),
             radius = size.minDimension / 2f,
-            style = Stroke(width = 1.4.dp.toPx()),
+            style = Stroke(width = 1.2.dp.toPx()),
         )
         drawLine(
             color = Color.White.copy(alpha = 0.65f),
             start = Offset(2.dp.toPx(), size.height - 2.dp.toPx()),
             end = Offset(size.width - 2.dp.toPx(), 2.dp.toPx()),
-            strokeWidth = 1.4.dp.toPx(),
+            strokeWidth = 1.2.dp.toPx(),
             cap = StrokeCap.Round,
         )
     }
@@ -276,7 +272,7 @@ private fun BatteryIcon(
     level: Int,
     modifier: Modifier = Modifier,
 ) {
-    Canvas(modifier = modifier.size(width = 22.dp, height = 11.dp)) {
+    Canvas(modifier = modifier.size(width = 18.dp, height = 9.dp)) {
         val terminalWidth = 2.dp.toPx()
         val bodyWidth = size.width - terminalWidth - 1.dp.toPx()
         drawRoundRect(

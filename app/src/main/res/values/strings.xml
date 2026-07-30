@@ -5,6 +5,9 @@
     <string name="destination_hub">Hub</string>
     <string name="destination_active_frames">Active Frames</string>
     <string name="destination_apps">Apps</string>
+    <string name="blackberry_hub">BlackBerry Hub</string>
+    <string name="workspace_personal">Personal</string>
+    <string name="workspace_work">Work</string>
     <string name="hub_empty_title">Your Hub is quiet</string>
     <string name="hub_empty_enabled_description">New conversations and alerts will appear here.</string>
     <string name="frame_clock">Clock</string>
@@ -14,7 +17,7 @@
     <string name="frame_recent_empty">Applications you open from the launcher will become Active Frames.</string>
     <string name="battery_percentage">%1$d%%</string>
     <string name="battery_remaining">Battery remaining</string>
-    <string name="search_apps">Search apps</string>
+    <string name="search_apps">Universal Search</string>
     <string name="clear_search">Clear search</string>
     <string name="no_apps_available">No launchable applications are available.</string>
     <string name="no_apps_match">No applications match “%1$s”.</string>
@@ -36,7 +39,7 @@
     <string name="notification_has_no_action">This notification cannot be opened.</string>
     <string name="notification_open_failed">The notification is no longer available.</string>
     <string name="notification_action_failed">The notification service is not connected yet.</string>
-    <string name="notification_shade_title">Notifications</string>
+    <string name="notification_shade_title">Quick Settings</string>
     <string name="close_shade">Close</string>
     <plurals name="notification_count">
         <item quantity="one">%1$d notification</item>

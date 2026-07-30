@@ -9,6 +9,7 @@ import android.content.pm.LauncherActivityInfo
 import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
+import android.os.Build
 import android.os.UserManager
 import android.util.Log
 import androidx.core.content.ContextCompat
@@ -141,8 +142,18 @@ class AppCatalogRepository(context: Context) {
             label = activity.label.toString(),
             componentName = componentName,
             user = activity.user,
+            isWorkProfile = isManagedProfile(activity),
             icon = loadIcon(activity),
         )
+    }
+
+    private fun isManagedProfile(activity: LauncherActivityInfo): Boolean {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+            return false
+        }
+        return launcherApps
+            .getLauncherUserInfo(activity.user)
+            ?.userType == UserManager.USER_TYPE_PROFILE_MANAGED
     }
 
     private fun loadIcon(activity: LauncherActivityInfo): Bitmap {

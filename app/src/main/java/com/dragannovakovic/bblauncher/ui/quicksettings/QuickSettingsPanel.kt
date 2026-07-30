@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
@@ -32,6 +33,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.dragannovakovic.bblauncher.R
 import com.dragannovakovic.bblauncher.data.system.ConnectionType
+import com.dragannovakovic.bblauncher.ui.theme.BB10BlueDark
 
 @Composable
 fun QuickSettingsPanel(
@@ -85,7 +87,7 @@ private fun QuickSettingsContent(
             onClick = onBluetoothClicked,
         ),
         QuickSettingTile(
-            glyph = "\u2600",
+            glyph = "\u2600\uFE0E",
             labelRes = R.string.quick_flashlight,
             isActive = uiState.isTorchEnabled,
             isEnabled = uiState.isTorchAvailable,
@@ -103,7 +105,7 @@ private fun QuickSettingsContent(
             onClick = onVolumeClicked,
         ),
         QuickSettingTile(
-            glyph = "\u263C",
+            glyph = "D",
             labelRes = R.string.quick_display,
             onClick = onDisplayClicked,
         ),
@@ -122,14 +124,14 @@ private fun QuickSettingsContent(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .background(Color.Black.copy(alpha = 0.58f))
-            .padding(horizontal = 10.dp, vertical = 10.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+            .background(Color(0xFF171D20))
+            .padding(horizontal = 6.dp, vertical = 7.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         tiles.chunked(4).forEach { rowTiles ->
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
             ) {
                 rowTiles.forEach { tile ->
                     QuickSettingTile(
@@ -159,10 +161,14 @@ private fun QuickSettingTile(
     tile: QuickSettingTile,
     modifier: Modifier = Modifier,
 ) {
+    val fontScale = LocalDensity.current.fontScale
+    val tileAspectRatio = (
+        1.35f / fontScale.coerceIn(1f, 1.6f)
+    ).coerceAtLeast(0.84f)
     val backgroundColor = if (tile.isActive) {
-        MaterialTheme.colorScheme.primary
+        BB10BlueDark
     } else {
-        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.92f)
+        Color(0xFF2B3337)
     }
     val contentColor = if (tile.isActive) {
         MaterialTheme.colorScheme.onPrimary
@@ -172,29 +178,29 @@ private fun QuickSettingTile(
 
     Column(
         modifier = modifier
-            .aspectRatio(1.2f)
+            .aspectRatio(tileAspectRatio)
             .alpha(if (tile.isEnabled) 1f else 0.48f)
-            .clip(RoundedCornerShape(2.dp))
+            .clip(RoundedCornerShape(1.dp))
             .background(backgroundColor)
             .clickable(
                 enabled = tile.isEnabled,
                 role = Role.Button,
                 onClick = tile.onClick,
             )
-            .padding(horizontal = 4.dp, vertical = 7.dp),
+            .padding(horizontal = 3.dp, vertical = 5.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
         Text(
             text = tile.glyph,
             color = contentColor,
-            fontSize = 19.sp,
+            fontSize = 17.sp,
             fontWeight = FontWeight.Light,
         )
         Text(
             text = stringResource(tile.labelRes),
             color = contentColor,
-            fontSize = 9.sp,
+            fontSize = 8.sp,
             fontWeight = FontWeight.SemiBold,
             maxLines = 1,
         )

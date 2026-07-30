@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import java.io.IOException
 
-private const val RecentAppLimit = 4
+private const val RecentAppLimit = 6
 private const val RecentAppSeparator = "\n"
 private val Context.launcherDataStore by preferencesDataStore(name = "launcher_state")
 

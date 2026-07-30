@@ -2,6 +2,7 @@ package com.dragannovakovic.bblauncher.ui.hub
 
 import android.text.format.DateUtils
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -9,12 +10,14 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -32,6 +35,7 @@ import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -47,6 +51,12 @@ import com.dragannovakovic.bblauncher.R
 import com.dragannovakovic.bblauncher.data.notifications.HubNotification
 import com.dragannovakovic.bblauncher.data.system.ConnectionType
 import com.dragannovakovic.bblauncher.ui.quicksettings.QuickSettingsPanel
+import com.dragannovakovic.bblauncher.ui.theme.BB10Blue
+import com.dragannovakovic.bblauncher.ui.theme.BB10BlueDark
+import com.dragannovakovic.bblauncher.ui.theme.BB10Divider
+import com.dragannovakovic.bblauncher.ui.theme.BB10Ink
+import com.dragannovakovic.bblauncher.ui.theme.BB10Paper
+import com.dragannovakovic.bblauncher.ui.theme.BB10PaperSecondary
 
 @Composable
 fun HubScreen(
@@ -60,31 +70,109 @@ fun HubScreen(
 ) {
     RefreshAccessOnResume(onRefreshAccess)
 
-    Column(modifier = modifier.fillMaxSize()) {
-        uiState.messageRes?.let { messageRes ->
-            Text(
-                text = stringResource(messageRes),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 18.dp, vertical = 8.dp),
-                color = MaterialTheme.colorScheme.primary,
-                fontSize = 12.sp,
-                textAlign = TextAlign.Center,
-            )
-        }
+    Row(modifier = modifier.fillMaxSize()) {
+        HubRail(notificationCount = uiState.notificationCount)
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxSize()
+                .background(BB10Paper),
+        ) {
+            uiState.messageRes?.let { messageRes ->
+                Text(
+                    text = stringResource(messageRes),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 18.dp, vertical = 8.dp),
+                    color = BB10BlueDark,
+                    fontSize = 12.sp,
+                    textAlign = TextAlign.Center,
+                )
+            }
 
-        when {
-            !uiState.hasNotificationAccess -> NotificationAccessCard(
-                onRequestAccess = onRequestAccess,
-            )
-            uiState.notificationCount == 0 -> EmptyHub()
-            else -> NotificationGroups(
-                uiState = uiState,
-                onNotificationClicked = onNotificationClicked,
-                onNotificationDismissed = onNotificationDismissed,
-                onClearAll = onClearAll,
+            when {
+                !uiState.hasNotificationAccess -> NotificationAccessCard(
+                    onRequestAccess = onRequestAccess,
+                )
+                uiState.notificationCount == 0 -> EmptyHub()
+                else -> NotificationGroups(
+                    uiState = uiState,
+                    onNotificationClicked = onNotificationClicked,
+                    onNotificationDismissed = onNotificationDismissed,
+                    onClearAll = onClearAll,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun HubRail(
+    notificationCount: Int,
+    modifier: Modifier = Modifier,
+) {
+    val fontScale = LocalDensity.current.fontScale
+    val railHeaderHeight = 46.dp + ((fontScale - 1f).coerceAtLeast(0f) * 12f).dp
+    val railItemHeight = 43.dp + ((fontScale - 1f).coerceAtLeast(0f) * 8f).dp
+    Column(
+        modifier = modifier
+            .width(46.dp)
+            .fillMaxHeight()
+            .background(Color(0xFF111719)),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(railHeaderHeight)
+                .background(BB10BlueDark),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                text = "\u2630",
+                color = Color.White,
+                fontSize = 20.sp,
             )
         }
+        HubRailGlyph(glyph = "\u2709", height = railItemHeight)
+        HubRailGlyph(glyph = "\u25CF", height = railItemHeight)
+        HubRailGlyph(
+            glyph = if (notificationCount > 0) {
+                notificationCount.coerceAtMost(99).toString()
+            } else {
+                "\u2605"
+            },
+            highlighted = notificationCount > 0,
+            height = railItemHeight,
+        )
+        HubRailGlyph(glyph = "\u2315", height = railItemHeight)
+        Spacer(modifier = Modifier.weight(1f))
+        HubRailGlyph(glyph = "\u260E\uFE0E", height = railItemHeight)
+    }
+}
+
+@Composable
+private fun HubRailGlyph(
+    glyph: String,
+    highlighted: Boolean = false,
+    height: androidx.compose.ui.unit.Dp = 43.dp,
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(height)
+            .background(
+                if (highlighted) BB10Blue.copy(alpha = 0.22f) else Color.Transparent,
+            ),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = glyph,
+            color = if (highlighted) BB10Blue else Color.White.copy(alpha = 0.82f),
+            fontSize = if (glyph.length > 1) 10.sp else 17.sp,
+            fontWeight = if (highlighted) FontWeight.Bold else FontWeight.Normal,
+        )
     }
 }
 
@@ -100,6 +188,8 @@ fun NotificationShade(
     onClearAll: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val fontScale = LocalDensity.current.fontScale
+    val headerHeight = 44.dp + ((fontScale - 1f).coerceAtLeast(0f) * 12f).dp
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -126,8 +216,12 @@ fun NotificationShade(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(54.dp)
-                .background(Color.Black)
+                .height(headerHeight)
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(BB10Blue, BB10BlueDark),
+                    ),
+                )
                 .padding(horizontal = 18.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -135,17 +229,17 @@ fun NotificationShade(
             Text(
                 text = stringResource(R.string.notification_shade_title),
                 color = MaterialTheme.colorScheme.onBackground,
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Light,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.SemiBold,
             )
             Text(
                 text = stringResource(R.string.close_shade),
                 modifier = Modifier
                     .clickable(role = Role.Button, onClick = onClose)
                     .padding(10.dp),
-                color = MaterialTheme.colorScheme.primary,
-                fontSize = 13.sp,
-                fontWeight = FontWeight.SemiBold,
+                color = Color.White,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold,
             )
         }
         QuickSettingsPanel(connectionType = connectionType)
@@ -175,8 +269,13 @@ private fun NotificationAccessCard(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(2.dp))
-                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.94f))
+                .clip(RoundedCornerShape(1.dp))
+                .background(Color.White)
+                .border(
+                    width = 1.dp,
+                    color = BB10Divider,
+                    shape = RoundedCornerShape(1.dp),
+                )
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -184,37 +283,36 @@ private fun NotificationAccessCard(
             Box(
                 modifier = Modifier
                     .size(62.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.18f)),
+                    .background(BB10Blue.copy(alpha = 0.14f)),
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
                     text = "!",
-                    color = MaterialTheme.colorScheme.primary,
+                    color = BB10BlueDark,
                     fontSize = 28.sp,
                     fontWeight = FontWeight.Light,
                 )
             }
             Text(
                 text = stringResource(R.string.notification_access_title),
-                color = MaterialTheme.colorScheme.onSurface,
+                color = BB10Ink,
                 style = MaterialTheme.typography.titleMedium,
                 textAlign = TextAlign.Center,
             )
             Text(
                 text = stringResource(R.string.notification_access_description),
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                color = BB10PaperSecondary,
                 style = MaterialTheme.typography.bodyMedium,
                 textAlign = TextAlign.Center,
             )
             Text(
                 text = stringResource(R.string.enable_notification_access),
                 modifier = Modifier
-                    .clip(RoundedCornerShape(2.dp))
-                    .background(MaterialTheme.colorScheme.primary)
+                    .clip(RoundedCornerShape(1.dp))
+                    .background(BB10BlueDark)
                     .clickable(role = Role.Button, onClick = onRequestAccess)
                     .padding(horizontal = 20.dp, vertical = 12.dp),
-                color = MaterialTheme.colorScheme.onPrimary,
+                color = Color.White,
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Bold,
             )
@@ -237,25 +335,23 @@ private fun EmptyHub(modifier: Modifier = Modifier) {
             Box(
                 modifier = Modifier
                     .size(72.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.16f)),
+                    .background(BB10Blue.copy(alpha = 0.12f)),
                 contentAlignment = Alignment.Center,
             ) {
                 Box(
                     modifier = Modifier
                         .size(24.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.primary),
+                        .background(BB10BlueDark),
                 )
             }
             Text(
                 text = stringResource(R.string.hub_empty_title),
-                color = MaterialTheme.colorScheme.onBackground,
+                color = BB10Ink,
                 style = MaterialTheme.typography.titleMedium,
             )
             Text(
                 text = stringResource(R.string.hub_empty_enabled_description),
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                color = BB10PaperSecondary,
                 style = MaterialTheme.typography.bodyMedium,
                 textAlign = TextAlign.Center,
             )
@@ -289,7 +385,7 @@ private fun NotificationGroups(
                         uiState.notificationCount,
                         uiState.notificationCount,
                     ),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = BB10PaperSecondary,
                     fontSize = 13.sp,
                 )
                 if (uiState.hasClearableNotifications) {
@@ -298,7 +394,7 @@ private fun NotificationGroups(
                         modifier = Modifier
                             .clickable(role = Role.Button, onClick = onClearAll)
                             .padding(8.dp),
-                        color = MaterialTheme.colorScheme.primary,
+                        color = BB10BlueDark,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.SemiBold,
                     )
@@ -331,27 +427,26 @@ private fun NotificationGroup(
     modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier = modifier.padding(horizontal = 12.dp),
+        modifier = modifier.padding(horizontal = 0.dp),
         verticalArrangement = Arrangement.spacedBy(1.dp),
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color.Black.copy(alpha = 0.42f))
-                .padding(horizontal = 12.dp, vertical = 8.dp),
+                .background(Color(0xFFDDE3E5))
+                .padding(horizontal = 10.dp, vertical = 7.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             Box(
                 modifier = Modifier
                     .size(28.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.22f)),
+                    .background(BB10BlueDark),
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
                     text = group.appName.firstOrNull()?.uppercaseChar()?.toString() ?: "?",
-                    color = MaterialTheme.colorScheme.primary,
+                    color = Color.White,
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Bold,
                 )
@@ -359,7 +454,7 @@ private fun NotificationGroup(
             Text(
                 text = group.appName,
                 modifier = Modifier.weight(1f),
-                color = MaterialTheme.colorScheme.onBackground,
+                color = BB10Ink,
                 fontSize = 13.sp,
                 fontWeight = FontWeight.SemiBold,
                 maxLines = 1,
@@ -367,7 +462,7 @@ private fun NotificationGroup(
             )
             Text(
                 text = group.notifications.size.toString(),
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                color = BB10PaperSecondary,
                 fontSize = 11.sp,
             )
         }
@@ -406,7 +501,11 @@ private fun NotificationCard(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.96f))
+            .background(Color.White)
+            .border(
+                width = 0.5.dp,
+                color = BB10Divider,
+            )
             .then(clickModifier)
             .padding(horizontal = 14.dp, vertical = 12.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -423,7 +522,7 @@ private fun NotificationCard(
                 Text(
                     text = notification.title,
                     modifier = Modifier.weight(1f),
-                    color = MaterialTheme.colorScheme.onSurface,
+                    color = BB10Ink,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.SemiBold,
                     maxLines = 1,
@@ -431,14 +530,14 @@ private fun NotificationCard(
                 )
                 Text(
                     text = relativeTime,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = BB10PaperSecondary,
                     fontSize = 10.sp,
                 )
             }
             if (notification.text.isNotBlank()) {
                 Text(
                     text = notification.text,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = BB10PaperSecondary,
                     fontSize = 13.sp,
                     lineHeight = 17.sp,
                     maxLines = 3,
@@ -456,7 +555,7 @@ private fun NotificationCard(
                         onClick = onDismiss,
                     )
                     .padding(start = 4.dp),
-                color = MaterialTheme.colorScheme.primary,
+                color = BB10BlueDark,
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Light,
             )

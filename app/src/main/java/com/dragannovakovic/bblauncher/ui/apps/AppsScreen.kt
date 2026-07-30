@@ -2,17 +2,20 @@ package com.dragannovakovic.bblauncher.ui.apps
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -28,6 +31,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalFocusManager
@@ -57,7 +63,7 @@ fun AppsScreen(
             query = uiState.query,
             onQueryChanged = onQueryChanged,
             onClear = onClearQuery,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
         )
 
         uiState.messageRes?.let { messageRes ->
@@ -98,12 +104,17 @@ private fun AppSearchField(
         onValueChange = onQueryChanged,
         modifier = modifier
             .fillMaxWidth()
-            .heightIn(min = 46.dp)
+            .heightIn(min = 34.dp)
             .clip(RoundedCornerShape(2.dp))
-            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.94f)),
+            .background(Color.Black.copy(alpha = 0.42f))
+            .border(
+                width = 1.dp,
+                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.42f),
+                shape = RoundedCornerShape(2.dp),
+            ),
         textStyle = TextStyle(
             color = MaterialTheme.colorScheme.onSurface,
-            fontSize = 16.sp,
+            fontSize = 13.sp,
         ),
         singleLine = true,
         cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
@@ -113,15 +124,21 @@ private fun AppSearchField(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 14.dp, vertical = 12.dp),
+                    .padding(horizontal = 11.dp, vertical = 7.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
+                Text(
+                    text = "\u2315",
+                    color = MaterialTheme.colorScheme.primary,
+                    fontSize = 16.sp,
+                )
+                Spacer(modifier = Modifier.width(8.dp))
                 Box(modifier = Modifier.weight(1f)) {
                     if (query.isEmpty()) {
                         Text(
                             text = stringResource(R.string.search_apps),
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            fontSize = 16.sp,
+                            fontSize = 13.sp,
                         )
                     }
                     innerTextField()
@@ -137,7 +154,7 @@ private fun AppSearchField(
                             )
                             .padding(start = 12.dp),
                         color = MaterialTheme.colorScheme.primary,
-                        fontSize = 24.sp,
+                        fontSize = 19.sp,
                         fontWeight = FontWeight.Light,
                     )
                 }
@@ -155,9 +172,9 @@ private fun AppGrid(
     LazyVerticalGrid(
         columns = GridCells.Fixed(4),
         modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(horizontal = 10.dp, vertical = 12.dp),
-        horizontalArrangement = Arrangement.spacedBy(6.dp),
-        verticalArrangement = Arrangement.spacedBy(18.dp),
+        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 5.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         items(
             items = apps,
@@ -181,22 +198,57 @@ private fun AppGridItem(
 
     Column(
         modifier = modifier
-            .clip(RoundedCornerShape(4.dp))
             .clickable(role = Role.Button, onClick = onClick)
-            .padding(horizontal = 2.dp, vertical = 4.dp),
+            .padding(horizontal = 2.dp, vertical = 2.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(7.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
-        Image(
-            bitmap = image,
-            contentDescription = null,
-            modifier = Modifier.size(58.dp),
-        )
+        Box(
+            modifier = Modifier
+                .size(width = 68.dp, height = 64.dp)
+                .shadow(2.dp, RoundedCornerShape(3.dp))
+                .clip(RoundedCornerShape(3.dp))
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            Color(0xCC29343A),
+                            Color(0xDD11171A),
+                        ),
+                    ),
+                )
+                .border(
+                    width = 0.5.dp,
+                    color = Color.White.copy(alpha = 0.08f),
+                    shape = RoundedCornerShape(3.dp),
+                ),
+            contentAlignment = Alignment.Center,
+        ) {
+            Image(
+                bitmap = image,
+                contentDescription = null,
+                modifier = Modifier.size(49.dp),
+            )
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .heightIn(min = 1.dp)
+                    .background(
+                        Brush.horizontalGradient(
+                            colors = listOf(
+                                Color.Transparent,
+                                MaterialTheme.colorScheme.primary.copy(alpha = 0.42f),
+                                Color.Transparent,
+                            ),
+                        ),
+                    ),
+            )
+        }
         Text(
             text = app.label,
             color = MaterialTheme.colorScheme.onBackground,
-            fontSize = 11.sp,
-            lineHeight = 13.sp,
+            fontSize = 10.sp,
+            lineHeight = 11.sp,
             maxLines = 2,
             overflow = TextOverflow.Ellipsis,
             textAlign = TextAlign.Center,

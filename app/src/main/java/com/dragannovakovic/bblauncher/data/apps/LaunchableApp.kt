@@ -9,5 +9,6 @@ data class LaunchableApp(
     val label: String,
     val componentName: ComponentName,
     val user: UserHandle,
+    val isWorkProfile: Boolean,
     val icon: Bitmap,
 )

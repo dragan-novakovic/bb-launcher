@@ -21,6 +21,7 @@ class AppsViewModel(application: Application) : AndroidViewModel(application) {
     private val recentAppsRepository = RecentAppsRepository(application)
     private val catalog = MutableStateFlow<List<LaunchableApp>>(emptyList())
     private val query = MutableStateFlow("")
+    private val selectedProfile = MutableStateFlow(AppProfile.Personal)
     private val isLoading = MutableStateFlow(true)
     private val messageRes = MutableStateFlow<Int?>(null)
     private var refreshJob: Job? = null
@@ -35,21 +36,42 @@ class AppsViewModel(application: Application) : AndroidViewModel(application) {
         apps to recentComponentNames.mapNotNull(appsById::get)
     }
 
-    val uiState = combine(
+    private val profiledCatalog = combine(
         catalogWithRecents,
+        selectedProfile,
+    ) { (apps, recentApps), requestedProfile ->
+        val hasWorkProfile = apps.any(LaunchableApp::isWorkProfile)
+        val effectiveProfile = effectiveAppProfile(requestedProfile, hasWorkProfile)
+        ProfiledCatalog(
+            apps = apps.filter { app ->
+                when (effectiveProfile) {
+                    AppProfile.Personal -> !app.isWorkProfile
+                    AppProfile.Work -> app.isWorkProfile
+                }
+            },
+            recentApps = recentApps,
+            selectedProfile = effectiveProfile,
+            hasWorkProfile = hasWorkProfile,
+        )
+    }
+
+    val uiState = combine(
+        profiledCatalog,
         query,
         isLoading,
         messageRes,
-    ) { (apps, recentApps), currentQuery, loading, message ->
+    ) { profiled, currentQuery, loading, message ->
         AppsUiState(
-            apps = apps.filter { app ->
+            apps = profiled.apps.filter { app ->
                 matchesAppQuery(
                     label = app.label,
                     packageName = app.componentName.packageName,
                     query = currentQuery,
                 )
             },
-            recentApps = recentApps,
+            recentApps = profiled.recentApps,
+            selectedProfile = profiled.selectedProfile,
+            hasWorkProfile = profiled.hasWorkProfile,
             query = currentQuery,
             isLoading = loading,
             messageRes = message,
@@ -73,6 +95,11 @@ class AppsViewModel(application: Application) : AndroidViewModel(application) {
         updateQuery("")
     }
 
+    fun selectProfile(profile: AppProfile) {
+        selectedProfile.value = profile
+        clearQuery()
+    }
+
     fun refresh() {
         refreshJob?.cancel()
         refreshJob = viewModelScope.launch {
@@ -88,6 +115,13 @@ class AppsViewModel(application: Application) : AndroidViewModel(application) {
             isLoading.value = false
         }
     }
+
+    private data class ProfiledCatalog(
+        val apps: List<LaunchableApp>,
+        val recentApps: List<LaunchableApp>,
+        val selectedProfile: AppProfile,
+        val hasWorkProfile: Boolean,
+    )
 
     fun launchApp(app: LaunchableApp) {
         messageRes.value = null

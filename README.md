@@ -5,7 +5,8 @@ An Android 16 launcher that recreates the interaction model and visual character
 ## Features
 
 - Android Home role with Hub, Active Frames, and Apps pages
-- Searchable installed-app grid with package-change refresh
+- BB10-inspired ribbon wallpaper, sharp panel chrome, and icon-only Flow navigation
+- Searchable installed-app grid with functional Personal/Work profile tabs
 - Persistent recent-app Active Frames plus live clock and battery cards
 - In-launcher BB10-style status bar with time, network, battery, and unread count
 - Notification-listener-backed Hub with grouped alerts and open, dismiss, and clear actions

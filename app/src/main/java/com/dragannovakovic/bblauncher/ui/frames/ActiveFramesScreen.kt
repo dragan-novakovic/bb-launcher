@@ -5,12 +5,14 @@ import android.os.BatteryManager
 import android.text.format.DateFormat
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -38,6 +40,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
@@ -61,9 +64,9 @@ fun ActiveFramesScreen(
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp),
+        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 6.dp),
+        horizontalArrangement = Arrangement.spacedBy(5.dp),
+        verticalArrangement = Arrangement.spacedBy(5.dp),
     ) {
         item(key = "clock") {
             ClockFrame()
@@ -114,17 +117,32 @@ private fun ClockFrame(modifier: Modifier = Modifier) {
         )
     }
 
-    FrameSurface(modifier = modifier) {
+    FrameSurface(
+        title = stringResource(R.string.frame_clock),
+        accent = Color(0xFF159CC8),
+        modifier = modifier,
+    ) {
         Column(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.SpaceBetween,
         ) {
-            FrameLabel(text = stringResource(R.string.frame_clock))
+            Box(
+                modifier = Modifier
+                    .size(30.dp)
+                    .background(Color.White.copy(alpha = 0.1f), CircleShape),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    text = "\u25F7",
+                    color = Color.White,
+                    fontSize = 18.sp,
+                )
+            }
             Column {
                 Text(
                     text = time,
                     color = MaterialTheme.colorScheme.onSurface,
-                    fontSize = 36.sp,
+                    fontSize = 34.sp,
                     fontWeight = FontWeight.Light,
                 )
                 Text(
@@ -153,12 +171,38 @@ private fun BatteryFrame(modifier: Modifier = Modifier) {
         }
     }
 
-    FrameSurface(modifier = modifier) {
+    FrameSurface(
+        title = stringResource(R.string.frame_device),
+        accent = Color(0xFF58A943),
+        modifier = modifier,
+    ) {
         Column(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.SpaceBetween,
         ) {
-            FrameLabel(text = stringResource(R.string.frame_device))
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(7.dp),
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(width = 28.dp, height = 14.dp)
+                        .border(1.dp, Color.White.copy(alpha = 0.82f))
+                        .padding(2.dp),
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth(batteryLevel.coerceIn(0, 100) / 100f)
+                            .fillMaxHeight()
+                            .background(Color.White),
+                    )
+                }
+                Text(
+                    text = stringResource(R.string.battery_remaining),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontSize = 10.sp,
+                )
+            }
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Text(
                     text = stringResource(R.string.battery_percentage, batteryLevel),
@@ -179,11 +223,6 @@ private fun BatteryFrame(modifier: Modifier = Modifier) {
                             .background(MaterialTheme.colorScheme.primary),
                     )
                 }
-                Text(
-                    text = stringResource(R.string.battery_remaining),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontSize = 12.sp,
-                )
             }
         }
     }
@@ -198,6 +237,8 @@ private fun RecentAppFrame(
     val icon = remember(app.icon) { app.icon.asImageBitmap() }
 
     FrameSurface(
+        title = app.label,
+        accent = MaterialTheme.colorScheme.primary,
         modifier = modifier.clickable(role = Role.Button, onClick = onClick),
     ) {
         Column(
@@ -209,31 +250,39 @@ private fun RecentAppFrame(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.Top,
             ) {
-                Image(
-                    bitmap = icon,
-                    contentDescription = null,
-                    modifier = Modifier.size(44.dp),
-                )
                 Box(
                     modifier = Modifier
-                        .size(7.dp)
+                        .size(54.dp)
+                        .background(Color.Black.copy(alpha = 0.22f)),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Image(
+                        bitmap = icon,
+                        contentDescription = null,
+                        modifier = Modifier.size(44.dp),
+                    )
+                }
+                Box(
+                    modifier = Modifier
+                        .size(5.dp)
                         .clip(CircleShape)
                         .background(MaterialTheme.colorScheme.primary),
                 )
             }
-            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text(
-                    text = app.label,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    style = MaterialTheme.typography.titleMedium,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                )
+            Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
                 Text(
                     text = stringResource(R.string.frame_recent_app),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontSize = 12.sp,
+                    fontSize = 11.sp,
                 )
+                repeat(3) { index ->
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth(if (index == 2) 0.58f else 0.88f)
+                            .height(2.dp)
+                            .background(Color.White.copy(alpha = 0.16f)),
+                    )
+                }
             }
         }
     }
@@ -241,12 +290,27 @@ private fun RecentAppFrame(
 
 @Composable
 private fun EmptyRecentAppsFrame(modifier: Modifier = Modifier) {
-    FrameSurface(modifier = modifier) {
+    FrameSurface(
+        title = stringResource(R.string.frame_recent),
+        accent = Color(0xFF6E7680),
+        modifier = modifier,
+    ) {
         Column(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.SpaceBetween,
         ) {
-            FrameLabel(text = stringResource(R.string.frame_recent))
+            Box(
+                modifier = Modifier
+                    .size(42.dp)
+                    .background(Color.White.copy(alpha = 0.08f)),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    text = "\u25A6",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontSize = 24.sp,
+                )
+            }
             Text(
                 text = stringResource(R.string.frame_recent_empty),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -259,37 +323,73 @@ private fun EmptyRecentAppsFrame(modifier: Modifier = Modifier) {
 
 @Composable
 private fun FrameSurface(
+    title: String,
+    accent: Color,
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {
-    Box(
+    val fontScale = LocalDensity.current.fontScale
+    val frameHeight = 188.dp + ((fontScale - 1f).coerceAtLeast(0f) * 90f).dp
+    val footerHeight = 29.dp + ((fontScale - 1f).coerceAtLeast(0f) * 8f).dp
+
+    Column(
         modifier = modifier
             .fillMaxWidth()
-            .height(210.dp)
-            .clip(RoundedCornerShape(2.dp))
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(
-                        Color(0xFF354044),
-                        MaterialTheme.colorScheme.surface,
-                    ),
-                ),
-            )
-            .padding(14.dp),
+            .height(frameHeight)
+            .clip(RoundedCornerShape(1.dp))
+            .border(
+                width = 0.5.dp,
+                color = Color.White.copy(alpha = 0.12f),
+                shape = RoundedCornerShape(1.dp),
+            ),
     ) {
-        content()
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            Color(0xEE303A3F),
+                            Color(0xF21A2023),
+                        ),
+                    ),
+                )
+                .padding(12.dp),
+        ) {
+            content()
+        }
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(footerHeight)
+                .background(Color.Black.copy(alpha = 0.82f)),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .size(width = 3.dp, height = footerHeight)
+                    .background(accent),
+            )
+            Text(
+                text = title,
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = 8.dp),
+                color = Color.White,
+                fontSize = 11.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Box(
+                modifier = Modifier
+                    .padding(end = 8.dp)
+                    .size(5.dp)
+                    .background(accent, CircleShape),
+            )
+        }
     }
-}
-
-@Composable
-private fun FrameLabel(text: String) {
-    Text(
-        text = text.uppercase(),
-        color = MaterialTheme.colorScheme.primary,
-        fontSize = 11.sp,
-        fontWeight = FontWeight.SemiBold,
-        letterSpacing = 0.8.sp,
-    )
 }
 
 private fun Context.currentBatteryLevel(): Int {
